@@ -5,6 +5,12 @@ node_modules
 out
 dist
 *.tgz
+sphinx/build
+sphinx/dist
+sphinx/*.egg-info
+__pycache__/
+*.pyc
+naming/
 
 # code coverage
 coverage
