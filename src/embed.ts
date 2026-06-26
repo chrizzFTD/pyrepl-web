@@ -356,6 +356,7 @@ function injectStyles() {
   style.textContent = `
     .pyrepl {
       display: inline-block;
+      position: relative;
       border-radius: 8px;
       overflow: hidden;
       box-shadow: var(--pyrepl-shadow);
@@ -420,6 +421,20 @@ function injectStyles() {
       height: 14px;
     }
 
+    .pyrepl-floating-buttons {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 10;
+      background: color-mix(in srgb, var(--pyrepl-header-bg) 85%, transparent);
+      border-radius: 4px;
+      padding: 2px;
+    }
+
+    .pyrepl--floating-buttons .xterm {
+      padding-top: 32px;
+    }
+
     .pyrepl .xterm {
       padding: 8px 12px 12px 12px;
     }
@@ -453,6 +468,16 @@ function applyThemeVariables(container: HTMLElement, theme: FullTheme) {
   );
 }
 
+function createActionButtons(): HTMLElement {
+  const buttons = document.createElement("div");
+  buttons.className = "pyrepl-header-buttons";
+  buttons.innerHTML = `
+    <button class="pyrepl-header-btn" data-action="copy" title="Copy output">${icons.copy}</button>
+    <button class="pyrepl-header-btn" data-action="clear" title="Clear terminal">${icons.clear}</button>
+  `;
+  return buttons;
+}
+
 function createHeader(config: PyreplConfig): HTMLElement {
   const header = document.createElement("div");
   header.className = "pyrepl-header";
@@ -474,13 +499,7 @@ function createHeader(config: PyreplConfig): HTMLElement {
   header.appendChild(title);
 
   if (config.showButtons) {
-    const buttons = document.createElement("div");
-    buttons.className = "pyrepl-header-buttons";
-    buttons.innerHTML = `
-      <button class="pyrepl-header-btn" data-action="copy" title="Copy output">${icons.copy}</button>
-      <button class="pyrepl-header-btn" data-action="clear" title="Clear terminal">${icons.clear}</button>
-    `;
-    header.appendChild(buttons);
+    header.appendChild(createActionButtons());
   } else {
     const spacer = document.createElement("div");
     spacer.style.width = "48px";
@@ -503,6 +522,11 @@ async function createTerminal(
 
   if (config.showHeader) {
     container.appendChild(createHeader(config));
+  } else if (config.showButtons) {
+    const floating = createActionButtons();
+    floating.classList.add("pyrepl-floating-buttons");
+    container.classList.add("pyrepl--floating-buttons");
+    container.appendChild(floating);
   }
 
   // Dynamically import xterm.js only when needed
@@ -614,7 +638,7 @@ async function createRepl(
   }
 
   // Set up button handlers
-  if (config.showHeader && config.showButtons) {
+  if (config.showButtons) {
     const copyBtn = container.querySelector('[data-action="copy"]');
     const clearBtn = container.querySelector('[data-action="clear"]');
 

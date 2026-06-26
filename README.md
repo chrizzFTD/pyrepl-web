@@ -36,8 +36,8 @@ That's it! No install needed.
 | `packages` | Comma-separated list of PyPI packages to preload | none |
 | `repl-title` | Custom title in the header bar | `Python REPL` |
 | `src` | Path to a Python startup script (see below) | none |
-| `no-header` | Hide the header bar (boolean attribute) | not set |
-| `no-buttons` | Hide copy/clear buttons in header (boolean attribute) | not set |
+| `no-header` | Hide the header bar; Copy/Clear buttons appear as a floating overlay in the top-right corner (boolean attribute) | not set |
+| `no-buttons` | Hide copy/clear buttons in the header or floating overlay (boolean attribute) | not set |
 | `readonly` | Disable input, display only (boolean attribute) | not set |
 | `no-banner` | Hide the Python version startup banner (boolean attribute) | not set |
 
