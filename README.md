@@ -128,3 +128,76 @@ window.pyreplThemes = {
 };
 </script>
 ```
+
+## Sphinx / Read the Docs
+
+Use the bundled Sphinx extension to embed interactive REPLs in documentation with no Node or Bun toolchain on Read the Docs.
+
+### Install
+
+After the extension is published to PyPI:
+
+```bash
+pip install sphinxcontrib-pyrepl-web
+```
+
+Until then, install from this repository:
+
+```bash
+pip install "sphinxcontrib-pyrepl-web @ git+https://github.com/chrizzftd/pyrepl-web@main#subdirectory=sphinx"
+```
+
+Or add to your project's docs extra in `setup.cfg`:
+
+```ini
+docs = sphinx; sphinxcontrib-pyrepl-web>=0.4.0
+```
+
+### Configure
+
+In `conf.py`:
+
+```python
+extensions = [
+    # ...your other extensions...
+    "sphinxcontrib.pyrepl_web",
+]
+
+pyrepl_web_packages = "mylib"      # optional global micropip preload
+pyrepl_web_no_header = True        # floating copy/clear buttons
+pyrepl_web_theme = "catppuccin-latte"
+```
+
+Optional: load JS from a CDN instead of the bundled assets:
+
+```python
+pyrepl_web_js = "https://cdn.jsdelivr.net/npm/pyrepl-web@0.4.0/dist/pyrepl.js"
+```
+
+### Use in RST
+
+```rst
+.. py-repl::
+   :packages: mylib
+   :height: 420px
+
+   import mylib
+   mylib.demo()
+```
+
+Directive options map to `<py-repl>` attributes: `:packages:`, `:theme:`, `:title:`, `:no-header:`, `:no-buttons:`, `:no-banner:`, `:readonly:`, `:height:`, and `:src:`.
+
+The directive body becomes a startup script that runs when the REPL loads. Static doctest blocks can stay as-is; the live REPL is additive.
+
+### Read the Docs
+
+No changes to `.readthedocs.yml` are required. Add `sphinxcontrib-pyrepl-web` to your docs dependencies and enable the extension in `conf.py`.
+
+### Releasing the extension
+
+On GitHub release, the `publish-pypi` workflow builds JS assets and publishes `sphinxcontrib-pyrepl-web` to PyPI. Set the `PYPI_API_TOKEN` repository secret before releasing.
+
+```bash
+bash scripts/copy-sphinx-assets.sh
+cd sphinx && python -m build
+```

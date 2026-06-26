@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sphinxcontrib-pyrepl-web"
+version = "0.4.0"
+description = "Sphinx extension for embedding pyrepl-web interactive Python REPLs"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+authors = [
+    { name = "Christian López Barrón", email = "chris.gfz@gmail.com" },
+]
+keywords = ["sphinx", "sphinx-extension", "pyodide", "repl", "documentation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Sphinx :: Extension",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Documentation :: Sphinx",
+]
+dependencies = [
+    "sphinx>=5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/chrizzftd/pyrepl-web"
+Repository = "https://github.com/chrizzftd/pyrepl-web"
+Documentation = "https://github.com/chrizzftd/pyrepl-web#sphinx--read-the-docs"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sphinxcontrib*"]
+
+[tool.setuptools.package-data]
+"sphinxcontrib.pyrepl_web" = ["static/*"]

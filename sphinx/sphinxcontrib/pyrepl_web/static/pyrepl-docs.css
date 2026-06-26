@@ -1,0 +1,15 @@
+.pyrepl-sphinx {
+  display: block;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.pyrepl-sphinx .pyrepl {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.pyrepl-sphinx .xterm {
+  height: 100%;
+}
