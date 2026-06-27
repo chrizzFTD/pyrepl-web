@@ -13,6 +13,8 @@ export class PyRepl extends LitElement {
     noButtons: { type: Boolean, attribute: "no-buttons" },
     noHeader: { type: Boolean, attribute: "no-header" },
     src: { type: String },
+    replaySrc: { type: String, attribute: "replay-src" },
+    replayStartup: { type: Boolean, attribute: "replay" },
   };
 
   declare theme: string;
@@ -23,6 +25,8 @@ export class PyRepl extends LitElement {
   declare noButtons: boolean;
   declare noHeader: boolean;
   declare src: string;
+  declare replaySrc: string;
+  declare replayStartup: boolean;
 
   constructor() {
     super();
@@ -34,6 +38,8 @@ export class PyRepl extends LitElement {
     this.noButtons = false;
     this.noHeader = false;
     this.src = "";
+    this.replaySrc = "";
+    this.replayStartup = false;
   }
 
   // Disable shadow DOM to allow external CSS styling
@@ -59,6 +65,8 @@ export class PyRepl extends LitElement {
         .filter((pkg) => pkg.length > 0),
       readonly: this.isReadonly,
       src: this.src || undefined,
+      replaySrc: this.replaySrc || undefined,
+      replayStartup: this.replayStartup,
       showHeader: !this.noHeader,
       showButtons: !this.noButtons,
       title: this.replTitle,

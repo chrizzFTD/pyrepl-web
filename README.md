@@ -36,6 +36,8 @@ That's it! No install needed.
 | `packages` | Comma-separated list of PyPI packages to preload | none |
 | `repl-title` | Custom title in the header bar | `Python REPL` |
 | `src` | Path to a Python startup script (see below) | none |
+| `replay-src` | Path to a Python script replayed with `>>>` prompts | none |
+| `replay` | Replay `src` with interactive prompts instead of silent load | not set |
 | `no-header` | Hide the header bar; Copy/Clear buttons appear as a floating overlay in the top-right corner (boolean attribute) | not set |
 | `no-buttons` | Hide copy/clear buttons in the header or floating overlay (boolean attribute) | not set |
 | `readonly` | Disable input, display only (boolean attribute) | not set |
@@ -60,6 +62,18 @@ df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [30, 25]})
 def setup():
     print("DataFrame loaded:")
     print(df)
+```
+
+Use `replay-src` (or `replay` with `src`) to execute Python as an interactive session — each statement is shown with `>>>` / `...` prompts, syntax highlighting, and live output:
+
+```html
+<py-repl replay-src="/scripts/demo.py" packages="pandas"></py-repl>
+```
+
+Combine silent bootstrap and visible replay:
+
+```html
+<py-repl src="/scripts/bootstrap.py" replay-src="/scripts/demo.py"></py-repl>
 ```
 
 ### Theming
