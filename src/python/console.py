@@ -386,8 +386,6 @@ async def start_repl():
             history,
         )
         history_index = len(history)
-    else:
-        await pygments_task
 
     def get_completions(text):
         """Get all completions for the given text."""

@@ -64,7 +64,8 @@ def setup():
     print(df)
 ```
 
-Use `replay-src` (or `replay` with `src`) to execute Python as an interactive session — each statement is shown with `>>>` / `...` prompts, syntax highlighting, and live output:
+Use `replay-src` (or `replay` with `src`) to execute Python as an interactive session — each statement is shown with `>>>` / `...` prompts, syntax highlighting, and live output. When `replay` is set on `src`, the script is replayed visibly and any `setup()` function is **not** called (use `src` without `replay` for silent load + `setup()` output):
+
 
 ```html
 <py-repl replay-src="/scripts/demo.py" packages="pandas"></py-repl>

@@ -623,15 +623,14 @@ async function createRepl(
       if (response.ok) {
         globalThis.pyreplReplayScript = await response.text();
       } else {
-        console.warn(
-          `pyrepl-web: failed to fetch replay script from ${config.replaySrc}`,
-        );
+        const message = `pyrepl-web: failed to fetch replay script from ${config.replaySrc}`;
+        console.warn(message);
+        term.write(`\x1b[31m${message}\x1b[0m\r\n`);
       }
     } catch (e) {
-      console.warn(
-        `pyrepl-web: error fetching replay script from ${config.replaySrc}`,
-        e,
-      );
+      const message = `pyrepl-web: error fetching replay script from ${config.replaySrc}`;
+      console.warn(message, e);
+      term.write(`\x1b[31m${message}\x1b[0m\r\n`);
     }
   }
 
