@@ -1,4 +1,5 @@
 import type { PyodideInterface } from "pyodide";
+import { resolvePackageRefs } from "./packages.js";
 
 // Re-export Terminal type for use throughout the file
 type Terminal = import("@xterm/xterm").Terminal;
@@ -572,10 +573,10 @@ async function createRepl(
   const pyodide = await getPyodide();
   await pyodide.loadPackage("micropip");
 
-  // Preload packages if specified
+  // Preload packages if specified (resolve local wheel paths for micropip)
   if (config.packages.length > 0) {
     const micropip = pyodide.pyimport("micropip");
-    await micropip.install(config.packages);
+    await micropip.install(resolvePackageRefs(config.packages));
   }
 
   // Show loaded message (dim gray)

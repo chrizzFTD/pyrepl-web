@@ -33,7 +33,7 @@ That's it! No install needed.
 | Attribute | Description | Default |
 |-----------|-------------|---------|
 | `theme` | Color theme name (builtin or registered via `window.pyreplThemes`) | `catppuccin-mocha` |
-| `packages` | Comma-separated list of PyPI packages to preload | none |
+| `packages` | Comma-separated list of PyPI packages and/or local wheel paths to preload | none |
 | `repl-title` | Custom title in the header bar | `Python REPL` |
 | `src` | Path to a Python startup script (see below) | none |
 | `replay-src` | Path to a Python script replayed with `>>>` prompts | none |
@@ -42,6 +42,21 @@ That's it! No install needed.
 | `no-buttons` | Hide copy/clear buttons in the header or floating overlay (boolean attribute) | not set |
 | `readonly` | Disable input, display only (boolean attribute) | not set |
 | `no-banner` | Hide the Python version startup banner (boolean attribute) | not set |
+
+### Local Pyodide Wheels
+
+Preload a locally hosted wheel alongside PyPI packages. Paths are resolved against the current page URL (same as `src`), so site-relative paths work in flat doc layouts:
+
+```html
+<py-repl
+  packages="_static/wheels/myext-pyodide.whl, numpy"
+  src="_static/bootstrap.py"
+></py-repl>
+```
+
+Place wheels under your static assets directory (e.g. Sphinx `_static/wheels/`). For nested page hierarchies, use a root-absolute path (`/_static/wheels/foo.whl`) so resolution is independent of page depth.
+
+Micropip requires wheel URIs to use `http:`, `https:`, or `emfs:` schemes — pyrepl-web resolves relative paths automatically before install.
 
 ### Startup Scripts
 
