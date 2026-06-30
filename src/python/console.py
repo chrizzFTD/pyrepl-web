@@ -136,12 +136,81 @@ class BrowserConsole(Console):
         pass
 
 
+async def replay_script(
+    source,
+    browser_console,
+    repl_globals,
+    exec_with_redirect,
+    syntax_highlight,
+    PS1,
+    PS2,
+    history,
+):
+    """Execute source line-by-line with REPL prompts and highlighting."""
+    lines = source.splitlines()
+    i = 0
+    while i < len(lines):
+        while i < len(lines) and not lines[i].strip():
+            i += 1
+        if i >= len(lines):
+            break
+
+        buffer = []
+        while i < len(lines):
+            line = lines[i]
+            i += 1
+
+            if not buffer and not line.strip():
+                continue
+
+            buffer.append(line)
+            source_so_far = "\n".join(buffer)
+
+            if len(buffer) == 1:
+                browser_console.term.write(
+                    PS1 + syntax_highlight(line) + "\r\n"
+                )
+            else:
+                browser_console.term.write(
+                    PS2 + syntax_highlight(line) + "\r\n"
+                )
+
+            try:
+                code = compile_command(source_so_far, "<startup>", "single")
+            except (OverflowError, SyntaxError) as e:
+                browser_console.term.write(
+                    f"\x1b[31mSyntaxError: {e}\x1b[0m\r\n"
+                )
+                buffer = []
+                break
+
+            if code is None:
+                continue
+
+            try:
+                exec_with_redirect(code, repl_globals)
+            except SystemExit:
+                pass
+            except Exception as e:
+                browser_console.term.write(
+                    f"\x1b[31m{type(e).__name__}: {e}\x1b[0m\r\n"
+                )
+
+            if source_so_far.strip():
+                history.append(source_so_far)
+            break
+
+    return history
+
+
 async def start_repl():
     # Create a new console for this terminal instance
     browser_console = BrowserConsole(js.term)
 
-    # Capture startup script before JS moves to next REPL and overwrites it
+    # Capture startup scripts before JS moves to next REPL and overwrites them
     startup_script = getattr(js, "pyreplStartupScript", None)
+    replay_script_content = getattr(js, "pyreplReplayScript", None)
+    replay_startup = getattr(js, "pyreplReplayStartup", False)
     theme_name = getattr(js, "pyreplTheme", "catppuccin-mocha")
     pygments_fallback = getattr(js, "pyreplPygmentsFallback", "catppuccin-mocha")
     info_line = getattr(js, "pyreplInfo", "Python (Pyodide)")
@@ -206,8 +275,7 @@ async def start_repl():
         except Exception as e:
             browser_console.term.write(f"[ERROR] Pygments load failed: {e}\r\n")
 
-    # Start loading Pygments in background (non-blocking)
-    asyncio.create_task(load_pygments())
+    pygments_task = asyncio.create_task(load_pygments())
 
     def syntax_highlight(code):
         if not code:
@@ -273,10 +341,12 @@ async def start_repl():
     }
     completer = rlcompleter.Completer(repl_globals)
 
-    # Run startup script if one was provided (silently, just to populate namespace)
-    if startup_script:
+    history = []
+    history_index = 0
+
+    # Silent bootstrap script (:file: / src without replay)
+    if startup_script and not replay_startup:
         try:
-            # Temporarily suppress stdout/stderr during startup
             old_stdout, old_stderr = sys.stdout, sys.stderr
             sys.stdout = sys.stderr = type(
                 "null", (), {"write": lambda s, x: None, "flush": lambda s: None}
@@ -290,7 +360,6 @@ async def start_repl():
                 f"\x1b[31mStartup script error - {type(e).__name__}: {e}\x1b[0m\r\n"
             )
 
-        # If startup script defined a setup() function, call it with output visible
         if "setup" in repl_globals and callable(repl_globals["setup"]):
             try:
                 exec_with_redirect(compile("setup()", "<setup>", "exec"), repl_globals)
@@ -298,6 +367,25 @@ async def start_repl():
                 browser_console.term.write(
                     f"\x1b[31msetup() error - {type(e).__name__}: {e}\x1b[0m\r\n"
                 )
+
+    # Replay script with interactive prompts
+    replay_source = replay_script_content
+    if replay_source is None and startup_script and replay_startup:
+        replay_source = startup_script
+
+    if replay_source:
+        await pygments_task
+        history = await replay_script(
+            replay_source,
+            browser_console,
+            repl_globals,
+            exec_with_redirect,
+            syntax_highlight,
+            PS1,
+            PS2,
+            history,
+        )
+        history_index = len(history)
 
     def get_completions(text):
         """Get all completions for the given text."""
@@ -323,9 +411,6 @@ async def start_repl():
     browser_console.term.write(PS1)
     lines = []
     current_line = ""
-
-    history = []
-    history_index = 0
 
     while True:
         event = await browser_console.get_event(block=True)

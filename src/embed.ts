@@ -52,6 +52,8 @@ declare global {
   var pyreplInfo: string;
   var pyreplBanner: boolean;
   var pyreplStartupScript: string | undefined;
+  var pyreplReplayScript: string | undefined;
+  var pyreplReplayStartup: boolean;
   var pyreplReadonly: boolean;
   var pyreplPromptColor: string;
   var pyreplPygmentsStyle: Record<string, string> | undefined;
@@ -196,6 +198,8 @@ interface PyreplConfig {
   title: string;
   packages: string[];
   src: string | null;
+  replaySrc: string | null;
+  replayStartup: boolean;
   readonly: boolean;
   showBanner: boolean;
 }
@@ -252,6 +256,8 @@ function parseConfig(container: HTMLElement): PyreplConfig {
     title: container.dataset.title || "python",
     packages,
     src: container.dataset.src || null,
+    replaySrc: container.dataset.replaySrc || null,
+    replayStartup: container.dataset.replay === "true",
     readonly: container.dataset.readonly === "true",
     showBanner: container.dataset.noBanner !== "true",
   };
@@ -283,6 +289,8 @@ export class PyReplEmbed {
   private packages: string[];
   private readonly: boolean;
   private src: string | undefined;
+  private replaySrc: string | undefined;
+  private replayStartup: boolean;
   private showHeader: boolean;
   private showButtons: boolean;
   private title: string;
@@ -294,6 +302,8 @@ export class PyReplEmbed {
     packages?: string[];
     readonly?: boolean;
     src?: string;
+    replaySrc?: string;
+    replayStartup?: boolean;
     showHeader?: boolean;
     showButtons?: boolean;
     title?: string;
@@ -304,6 +314,8 @@ export class PyReplEmbed {
     this.packages = config.packages || [];
     this.readonly = config.readonly || false;
     this.src = config.src;
+    this.replaySrc = config.replaySrc;
+    this.replayStartup = config.replayStartup || false;
     this.showHeader =
       config.showHeader !== undefined ? config.showHeader : true;
     this.showButtons =
@@ -320,6 +332,10 @@ export class PyReplEmbed {
     if (this.src) {
       this.container.dataset.src = this.src;
     }
+    if (this.replaySrc) {
+      this.container.dataset.replaySrc = this.replaySrc;
+    }
+    this.container.dataset.replay = this.replayStartup ? "true" : "false";
     this.container.dataset.header = this.showHeader ? "true" : "false";
     this.container.dataset.buttons = this.showButtons ? "true" : "false";
     this.container.dataset.title = this.title;
@@ -587,7 +603,7 @@ async function createRepl(
   globalThis.pyreplPygmentsStyle = config.theme.pygmentsStyle;
   globalThis.pyreplBanner = config.showBanner;
 
-  // Pre-fetch startup script if specified (before starting REPL)
+  // Pre-fetch startup scripts if specified (before starting REPL)
   if (config.src) {
     try {
       const response = await fetch(config.src);
@@ -600,6 +616,25 @@ async function createRepl(
       console.warn(`pyrepl-web: error fetching script from ${config.src}`, e);
     }
   }
+
+  if (config.replaySrc) {
+    try {
+      const response = await fetch(config.replaySrc);
+      if (response.ok) {
+        globalThis.pyreplReplayScript = await response.text();
+      } else {
+        const message = `pyrepl-web: failed to fetch replay script from ${config.replaySrc}`;
+        console.warn(message);
+        term.write(`\x1b[31m${message}\x1b[0m\r\n`);
+      }
+    } catch (e) {
+      const message = `pyrepl-web: error fetching replay script from ${config.replaySrc}`;
+      console.warn(message, e);
+      term.write(`\x1b[31m${message}\x1b[0m\r\n`);
+    }
+  }
+
+  globalThis.pyreplReplayStartup = config.replayStartup;
 
   // Load and start the Python REPL
   const consoleCode = await getConsoleCode();
@@ -620,6 +655,8 @@ async function createRepl(
   // biome-ignore lint/suspicious/noExplicitAny: Python-set global
   (globalThis as any).term = null;
   globalThis.pyreplStartupScript = undefined;
+  globalThis.pyreplReplayScript = undefined;
+  globalThis.pyreplReplayStartup = false;
   globalThis.pyreplTheme = "";
   globalThis.pyreplPygmentsFallback = "";
   globalThis.pyreplInfo = "";
