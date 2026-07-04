@@ -261,7 +261,7 @@ async function getPyodide(): Promise<PyodideInterface> {
   if (!pyodidePromise) {
     const { loadPyodide } = await import("pyodide");
     pyodidePromise = loadPyodide({
-      indexURL: "https://cdn.jsdelivr.net/pyodide/v314.0.1/full/",
+      indexURL: "https://cdn.jsdelivr.net/pyodide/v314.0.2/full/",
       // Suppress Pyodide's internal logging (Loading/Loaded messages)
       stdout: () => {},
       stderr: () => {},
