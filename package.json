@@ -5,8 +5,7 @@
   "main": "dist/pyrepl.js",
   "files": [
     "dist/*.js",
-    "README.md",
-    "CHANGELOG.md"
+    "README.md"
   ],
   "scripts": {
     "dev": "bun run build && bun --hot src/server.ts --watch",
