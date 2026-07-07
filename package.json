@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "bun run build && bun --hot src/server.ts --watch",
     "build": "bun run build.ts",
+    "test": "bun test",
     "prepare": "husky"
   },
   "keywords": [
